@@ -1,0 +1,23 @@
+.list-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+
+    button {
+        min-width: 130px;
+        border: none;
+        outline: none;
+        padding: 10px 14px;
+        margin-right: 10px;
+        border-radius: 25px;
+        transition: all 0.35s ease-in;
+
+    }
+
+    button.active {
+        background-color: red;
+        color: white;
+    }
+}
