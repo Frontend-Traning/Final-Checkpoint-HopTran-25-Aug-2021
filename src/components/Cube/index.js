@@ -1,11 +1,12 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useLoader } from "@react-three/fiber";
+import React, { useState, useEffect } from "react";
+import { useLoader, useThree } from "@react-three/fiber";
 import { DoubleSide, TextureLoader } from "three";
-import { Html } from "@react-three/drei";
+import { getCameraPositionFromLookAtCoordinates } from "../../helper/getPosition";
+
 import "./style.scss";
 
-function Cube({ listScenes, activeId, changeActiveId }) {
-  const [isLoadedScene, setIsLoadedScene] = useState(false);
+function Cube({ listScenes, activeId, locationLookAt }) {
+  const { camera } = useThree();
 
   useEffect(() => {
     if (listScenes.length === 0) {
@@ -15,32 +16,20 @@ function Cube({ listScenes, activeId, changeActiveId }) {
     }
   }, [listScenes]);
 
+  const [ox, oy, oz] = locationLookAt;
+  const { x, y, z } = getCameraPositionFromLookAtCoordinates(ox, oy, oz);
+  camera.position.set(x, y, z);
+
+  const [isLoadedScene, setIsLoadedScene] = useState(false);
   const mapsCube = listScenes.find((scene) => scene.id === activeId);
-
   const maps = mapsCube ? mapsCube?.cubeMapImages?.size1024 : [];
-
   const [Px, Nx, Py, Ny, Pz, Nz] = useLoader(TextureLoader, [...maps]);
-
-  const listButton = listScenes.map((item) => {
-    return (
-      <button
-        className={item?.id === activeId ? "active" : ""}
-        key={item.id}
-        onClick={() => changeActiveId(item)}
-        disabled={item?.id === activeId ? true : false}
-      >
-        {item?.title}
-      </button>
-    );
-  });
-
-  //const mesh = useRef();
 
   if (isLoadedScene) {
     return (
       <group>
         <mesh>
-          <boxGeometry args={[100, 100, 100]} attach="geometry" />
+          <boxGeometry args={[1000, 1000, 1000]} attach="geometry" />
           <meshBasicMaterial
             map={Px}
             attachArray="material"
@@ -71,11 +60,6 @@ function Cube({ listScenes, activeId, changeActiveId }) {
             attachArray="material"
             side={DoubleSide}
           />
-        </mesh>
-        <mesh>
-          <Html>
-            <div className="list-button d-flex">{listButton}</div>
-          </Html>
         </mesh>
       </group>
     );

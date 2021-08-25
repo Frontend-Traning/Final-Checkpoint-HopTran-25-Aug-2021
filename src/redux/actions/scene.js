@@ -7,9 +7,9 @@ export const setAllScenes = (scenes) => {
     payload: scenes,
   };
 };
-export const setActiveScence = (scene) => {
+export const setActiveScence = (id) => {
   return {
     type: SET_ACTIVE_SCENE,
-    scene,
+    id,
   };
 };

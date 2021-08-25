@@ -1,41 +1,57 @@
-import "./App.scss";
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import Cube from "./components/Cube";
-import axios from "axios";
-import { setAllScenes, setActiveScence } from "./redux/actions/scene";
 import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
+import SideBar from "./components/sideBar";
+import ListHotspot from "./components/listHotspot";
+import { setAllScenes, setActiveScence } from "./redux/actions/scene";
+import Cube from "./components/Cube";
+import "./App.scss";
 
 const App = () => {
   const scenes = useSelector((state) => state.scene.listScenes);
   const activeId = useSelector((state) => state.scene.activeId);
+  const locationLookAt = useSelector((state) => state.scene.defaultLocation);
+
   const dispatch = useDispatch();
 
-  const fetchScenes = async () => {
-    const response = await axios
-      .get("https://my-json-server.typicode.com/vantu98/sample-api/scenes")
-      .catch((error) => {
-        console.log("Error", error);
-      });
-    dispatch(setAllScenes(response.data));
-  };
-
   useEffect(() => {
-    fetchScenes();
-  }, []);
+    const fetchScenes = async () => {
+      const response = await axios
+        .get("https://my-json-server.typicode.com/vantu98/sample-api/scenes")
+        .catch((error) => {
+          console.log("Error", error);
+        });
+      dispatch(setAllScenes(response.data));
+    };
 
-  function handleChangeActiveId(scene) {
-    const action = setActiveScence(scene);
-    dispatch(action);
-  }
+    fetchScenes();
+  }, [dispatch]);
+
+  const handleChangeActiveId = useCallback(
+    (id) => {
+      const listId = scenes.map((item) => item.id);
+      if (listId.includes(id)) {
+        dispatch(setActiveScence(id));
+      }
+    },
+    [dispatch, scenes]
+  );
 
   return (
     <div className="wellcome">
-      <div style={{ width: "100vw", height: "100vh" }}>
+      <div className="main-scene">
         <Canvas>
           <Suspense fallback={null}>
             <Cube
+              listScenes={scenes}
+              activeId={activeId}
+              changeActiveId={handleChangeActiveId}
+              locationLookAt={locationLookAt}
+            />
+
+            <ListHotspot
               listScenes={scenes}
               activeId={activeId}
               changeActiveId={handleChangeActiveId}
@@ -44,6 +60,11 @@ const App = () => {
           <OrbitControls />
         </Canvas>
       </div>
+      <SideBar
+        listScenes={scenes}
+        activeId={activeId}
+        changeActiveId={handleChangeActiveId}
+      />
     </div>
   );
 };
